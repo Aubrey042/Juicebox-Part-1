@@ -1,15 +1,15 @@
-const { client, getAllUsers } = require('./index');
+const {
+  client,
+  getAllUsers
+} = require('./index');
 
 async function dropTables() {
   try {
     console.log("Starting to drop tables...");
 
-    const query = `
+    await client.query(`
       DROP TABLE IF EXISTS users;
-    `;
-    console.log('Query:', query);
-
-    await client.query(query);
+    `);
 
     console.log("Finished dropping tables!");
   } catch (error) {
@@ -22,16 +22,13 @@ async function createTables() {
   try {
     console.log("Starting to build tables...");
 
-    const query = `
+    await client.query(`
       CREATE TABLE users (
         id SERIAL PRIMARY KEY,
         username varchar(255) UNIQUE NOT NULL,
         password varchar(255) NOT NULL
       );
-    `;
-    console.log('Query:', query);
-
-    await client.query(query);
+    `);
 
     console.log("Finished building tables!");
   } catch (error) {
