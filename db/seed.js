@@ -7,16 +7,24 @@ const {
   createPost,
   updatePost,
   getAllPosts,
-  getPostsByUser
+  getPostsByUser,
+  getAllTags,
+  createTags,
+  createPostTag,
+  addTagsToPost,
+  getPostById
 } = require('./index');
+
 
 async function dropTables() {
   try {
     console.log("Starting to drop tables...");
 
     await client.query(`
-      DROP TABLE IF EXISTS posts;
-      DROP TABLE IF EXISTS users;
+    DROP TABLE IF EXISTS post_tags;
+    DROP TABLE IF EXISTS tags;
+    DROP TABLE IF EXISTS posts;
+    DROP TABLE IF EXISTS users;
     `);
 
     console.log("Finished dropping tables!");
@@ -45,6 +53,15 @@ async function createTables() {
         title varchar(255) NOT NULL,
         content TEXT NOT NULL,
         active BOOLEAN DEFAULT true
+      );
+      CREATE TABLE tags (
+        id SERIAL PRIMARY KEY,
+        name varchar(255) UNIQUE NOT NULL
+      );
+      create table post_tags (
+        "postId" INTEGER REFERENCES posts(id),
+        "tagId" INTEGER REFERENCES tags(id),
+        UNIQUE ("postId", "tagId")
       );
     `);
 
@@ -122,51 +139,81 @@ async function rebuildDB() {
     await createTables();
     await createInitialUsers();
     await createInitialPosts();
-  } catch (error) {
-    console.log("Error during rebuildDB")
-    throw error;
-  }
-}
 
-async function testDB() {
+    const tags = await getAllTags();
+    console.log("Finished creating tags!");
+console.log(tags);
+} catch (error) {
+  console.error("Error creating tags!");
+  throw error;
+  }
+  }
+  
+  async function createInitialPostTags() {
   try {
-    console.log("Starting to test database...");
+  console.log("Starting to create post_tags...");
+  
+  const [post1, post2, post3] = await getAllPosts();
+const [tag1, tag2, tag3, tag4] = await getAllTags();
 
-    console.log("Calling getAllUsers");
-    const users = await getAllUsers();
-    console.log("Result:", users);
+await addTagsToPost(post1.id, [tag1.id, tag2.id]);
+await addTagsToPost(post2.id, [tag2.id, tag3.id]);
+await addTagsToPost(post3.id, [tag3.id, tag4.id]);
 
-    console.log("Calling updateUser on users[0]");
-    const updateUserResult = await updateUser(users[0].id, {
-      name: "Newname Sogood",
-      location: "Lesterville, KY"
-    });
-    console.log("Result:", updateUserResult);
-
-    console.log("Calling getAllPosts");
-    const posts = await getAllPosts();
-    console.log("Result:", posts);
-
-    console.log("Calling updatePost on posts[0]");
-    const updatePostResult = await updatePost(posts[0].id, {
-      title: "New Title",
-      content: "Updated Content"
-    });
-    console.log("Result:", updatePostResult);
-
-    console.log("Calling getUserById with 1");
-    const albert = await getUserById(1);
-    console.log("Result:", albert);
-
-    console.log("Finished database tests!");
-  } catch (error) {
-    console.log("Error during testDB");
-    throw error;
+console.log("Finished creating post_tags!");
+} catch (error) {
+  console.error("Error creating post_tags!");
+  throw error;
   }
-}
+  }
+  
+  async function testDB() {
+  try {
+  console.log("Starting to test database...");
+  console.log("Calling getAllUsers");
+const users = await getAllUsers();
+console.log("Result:", users);
 
+console.log("Calling updateUser on users[0]");
+const updateUserResult = await updateUser(users[0].id, {
+  name: "Newname Sogood",
+  location: "Lesterville, KY"
+});
+console.log("Result:", updateUserResult);
 
-rebuildDB()
+console.log("Calling getAllPosts");
+const posts = await getAllPosts();
+console.log("Result:", posts);
+
+console.log("Calling updatePost on posts[0]");
+const updatePostResult = await updatePost(posts[0].id, {
+  title: "New Title",
+  content: "Updated Content"
+});
+console.log("Result:", updatePostResult);
+
+console.log("Calling getUserById with 1");
+const getUserByIdResult = await getUserById(1);
+console.log("Result:", getUserByIdResult);
+
+console.log("Calling getPostsByUser with 1");
+const getPostsByUserResult = await getPostsByUser(1);
+console.log("Result:", getPostsByUserResult);
+
+console.log("Calling getPostById with 1");
+const getPostByIdResult = await getPostById(1);
+console.log("Result:", getPostByIdResult);
+
+console.log("Finished testing database!");
+} catch (error) {
+  console.error("Error testing database!");
+  throw error;
+  }
+  }
+  
+  rebuildDB()
   .then(testDB)
   .catch(console.error)
   .finally(() => client.end());
+
+
