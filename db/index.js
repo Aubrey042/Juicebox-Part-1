@@ -191,6 +191,8 @@ async function getPostsByUser(userId) {
         throw error;
       }
     }
+
+    
     
     
     async function createPostTag(postId, tagId) {
