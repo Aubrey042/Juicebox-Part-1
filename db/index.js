@@ -94,7 +94,8 @@ async function getAllTags() {
 async function createPost({
   authorId,
   title,
-  content
+  content,
+  tags = [],
 }) {
   try {
     const { rows: [ post ] } = await client.query(`
