@@ -5,6 +5,18 @@ const client = new Client('postgres://localhost:5433/juicebox');
 
 
 
+
+
+
+async function getAllUsers() {
+  const { rows } = await client.query(
+    `SELECT id, username, name, password, location, active
+    FROM users;
+  `);
+
+  return rows;
+}
+
 async function createUser({ username, password, name, location}) {
   try {
     const { rows } = await client.query(`
@@ -22,14 +34,6 @@ async function createUser({ username, password, name, location}) {
 
 
 
-async function getAllUsers() {
-    const { rows } = await client.query(
-      `SELECT id, username, name, password, location
-      FROM users;
-    `);
-  
-    return rows;
-  }
 
 
 
@@ -37,8 +41,9 @@ async function getAllUsers() {
 
 module.exports = {
     client,
-    createUser,
     getAllUsers,
+    createUser,
+    
 };
 
 
